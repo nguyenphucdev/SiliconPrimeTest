@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>1E1B99EC-373D-434A-9CFD-9B59C870DF8E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>SiliconprimeTest</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>3045CC43-6867-42FB-8FC8-9080D4AAB2DC</key>
+		<string>https://github.com/phucit8x/SiliconPrimeTest.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>SiliconprimeTest.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>3045CC43-6867-42FB-8FC8-9080D4AAB2DC</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/phucit8x/SiliconPrimeTest.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>3045CC43-6867-42FB-8FC8-9080D4AAB2DC</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>3045CC43-6867-42FB-8FC8-9080D4AAB2DC</string>
+			<key>IDESourceControlWCCName</key>
+			<string>SiliconPrimeTest</string>
+		</dict>
+	</array>
+</dict>
+</plist>
