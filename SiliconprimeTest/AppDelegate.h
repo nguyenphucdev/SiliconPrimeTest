@@ -2,12 +2,13 @@
 //  AppDelegate.h
 //  SiliconprimeTest
 //
-//  Created by VinhPhuc on 7/31/14.
-//  Copyright (c) 2014 Happy. All rights reserved.
+//  Created by Apple on 7/31/14.
+//  Copyright (c) 2014 Apple. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 #import "CoreDataManager.h"
+#import <GoogleMaps/GoogleMaps.h>
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
@@ -17,6 +18,5 @@
 @property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, strong) NSFetchedResultsController *fetchedObjects;
-
 
 @end

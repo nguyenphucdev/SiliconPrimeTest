@@ -2,8 +2,8 @@
 //  CoreDataManager.m
 //  SiliconprimeTest
 //
-//  Created by VinhPhuc on 8/3/14.
-//  Copyright (c) 2014 Happy. All rights reserved.
+//  Created by Apple on 8/3/14.
+//  Copyright (c) 2014 Apple. All rights reserved.
 //
 
 #import "CoreDataManager.h"
@@ -142,6 +142,67 @@ static NSString *sProjectName = @"siliconprime";
                                                                                   predicate:predicate];
     
     return fetchedResultsController.fetchedObjects.count == 0;
+}
+- (void)deleteAllObjectsInCoreData
+{
+    NSArray *allEntities = self.managedObjectModel.entities;
+    for (NSEntityDescription *entityDescription in allEntities)
+    {
+        NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+        [fetchRequest setEntity:entityDescription];
+        
+        fetchRequest.includesPropertyValues = NO;
+        fetchRequest.includesSubentities = NO;
+        
+        NSError *error;
+        NSArray *items = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+        
+        if (error) {
+            NSLog(@"Error requesting items from Core Data: %@", [error localizedDescription]);
+        }
+        
+        for (NSManagedObject *managedObject in items) {
+            [self.managedObjectContext deleteObject:managedObject];
+        }
+        
+        if (![self.managedObjectContext save:&error]) {
+            NSLog(@"Error deleting %@ - error:%@", entityDescription, [error localizedDescription]);
+        }
+    }  
+}
+- (void) deleteAllObjects: (NSString *) entityDescription  {
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:entityDescription inManagedObjectContext:_managedObjectContext];
+    [fetchRequest setEntity:entity];
+    
+    NSError *error;
+    NSArray *items = [_managedObjectContext executeFetchRequest:fetchRequest error:&error];
+    
+    
+    for (NSManagedObject *managedObject in items) {
+    	[_managedObjectContext deleteObject:managedObject];
+    	NSLog(@"%@ object deleted",entityDescription);
+    }
+    if (![_managedObjectContext save:&error]) {
+    	NSLog(@"Error deleting %@ - error:%@",entityDescription,error);
+    }
+    
+}
+- (void)deleteAllObjectsWithEntityName:(NSString *)entityName
+                             inContext:(NSManagedObjectContext *)context
+{
+    NSFetchRequest *fetchRequest =
+    [NSFetchRequest fetchRequestWithEntityName:entityName];
+    fetchRequest.includesPropertyValues = NO;
+    fetchRequest.includesSubentities = NO;
+    
+    NSError *error;
+    NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
+    
+    for (NSManagedObject *managedObject in items) {
+        [context deleteObject:managedObject];
+        NSLog(@"Deleted %@", entityName);
+    }
 }
 
 @end

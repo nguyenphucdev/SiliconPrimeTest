@@ -2,8 +2,8 @@
 //  SiliconprimeTestTests.m
 //  SiliconprimeTestTests
 //
-//  Created by VinhPhuc on 7/31/14.
-//  Copyright (c) 2014 Happy. All rights reserved.
+//  Created by Apple on 7/31/14.
+//  Copyright (c) 2014 Apple. All rights reserved.
 //
 
 #import <XCTest/XCTest.h>

@@ -2,7 +2,7 @@
 //  CustomAnnotation.m
 //  MapCallouts
 //
-//  Created by VinhPhuc on 8/4/14.
+//  Created by Apple on 8/4/14.
 //
 //
 
@@ -19,14 +19,4 @@
     }
     return  self;
 }
-
-//-(MKAnnotationView *) annotationView
-//{
-//    MKAnnotationView * annotationView=[[MKAnnotationView alloc] initWithAnnotation:self reuseIdentifier:@"CustomAnnotation"];
-//    annotationView.enabled=YES;
-//    annotationView.canShowCallout=YES;
-//    annotationView.image=[UIImage imageNamed:imageName];
-//    annotationView.rightCalloutAccessoryView=[UIButton buttonWithType:UIButtonTypeDetailDisclosure];
-//    return annotationView;
-//}
 @end

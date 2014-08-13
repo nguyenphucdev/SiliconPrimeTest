@@ -2,8 +2,8 @@
 //  AppDelegate.m
 //  SiliconprimeTest
 //
-//  Created by VinhPhuc on 7/31/14.
-//  Copyright (c) 2014 Happy. All rights reserved.
+//  Created by Apple on 7/31/14.
+//  Copyright (c) 2014 Apple. All rights reserved.
 //
 
 #import "AppDelegate.h"
@@ -16,19 +16,26 @@
 @synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    
+    [GMSServices provideAPIKey:@"AIzaSyDDqATktPa4VeAlq1UABvNmXjLduxYyf5Y"];
     [FBLoginView class];
     [FBProfilePictureView class];
-    //--------------core data------------
-    // insert data
+    
+    // Core data
     NSDictionary *placeDict;
+    
+    placeDict=[[NSDictionary alloc] initWithObjectsAndKeys:@"Ha Noi",@"name",@"Ha Noi",@"address",[NSNumber numberWithFloat:5.0 ],@"rating",@"Hanoi",@"image",@"Thủ đô Việt Nam",@"desc", nil];
+    
+    [[CoreDataManager sharedManager] createEntityWithClassName:@"Place" attributesDictionary:placeDict];
    
-        placeDict=[[NSDictionary alloc] initWithObjectsAndKeys:@"Miller & Willits Accountants Inc.",@"name",@"1012 2nd St # 200, Encinitas, CA 92024, United States",@"address",[NSNumber numberWithFloat:4.5 ],@"rating",@"cell1",@"image",@"Miller & Willits Accountants, Inc. Serving Encinitas and North County 1012 Second St. ",@"desc", nil];
+    placeDict=[[NSDictionary alloc] initWithObjectsAndKeys:@"Miller & Willits Accountants Inc.",@"name",@"1012 2nd St # 200, Encinitas, CA 92024, United States",@"address",[NSNumber numberWithFloat:4.5 ],@"rating",@"cell1",@"image",@"Miller & Willits Accountants, Inc. Serving Encinitas and North County 1012 Second St. ",@"desc", nil];
     
     [[CoreDataManager sharedManager] createEntityWithClassName:@"Place" attributesDictionary:placeDict];
     
     placeDict=[[NSDictionary alloc] initWithObjectsAndKeys:@"Van Riper & Messina CPA's Inc. - Carlsbad",@"name",@"2888 Loker Ave E, Carlsbad, CA 92010, United States",@"address",[NSNumber numberWithFloat:5.0 ],@"rating",@"cell2",@"image",@"Miller & Willits Accountants, Inc. Serving Encinitas and North County 1012 Second St. ",@"desc", nil];
     
     [[CoreDataManager sharedManager] createEntityWithClassName:@"Place" attributesDictionary:placeDict];
+    
     
     return YES;
 }

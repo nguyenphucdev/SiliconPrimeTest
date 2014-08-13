@@ -2,7 +2,7 @@
 //  CustomAnnotation.h
 //  MapCallouts
 //
-//  Created by VinhPhuc on 8/4/14.
+//  Created by Apple on 8/4/14.
 //
 //
 
@@ -15,6 +15,5 @@
 @property(copy,nonatomic) NSString *title;
 @property(copy,nonatomic) NSString * imageName;
 -(id) initWithTitle:(NSString *) newTitle Location:(CLLocationCoordinate2D) location;
-//-(MKAnnotationView *) annotationView;
 
 @end

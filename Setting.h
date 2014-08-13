@@ -2,8 +2,8 @@
 //  Setting.h
 //  SiliconprimeTest
 //
-//  Created by VinhPhuc on 8/4/14.
-//  Copyright (c) 2014 Happy. All rights reserved.
+//  Created by Apple on 8/4/14.
+//  Copyright (c) 2014 Apple. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

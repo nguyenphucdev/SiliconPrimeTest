@@ -2,27 +2,29 @@
 //  PlaceTableViewController.m
 //  SiliconprimeTest
 //
-//  Created by VinhPhuc on 7/31/14.
-//  Copyright (c) 2014 Happy. All rights reserved.
+//  Created by Apple on 7/31/14.
+//  Copyright (c) 2014 Apple. All rights reserved.
 //
 
 #import "PlaceTableViewController.h"
-#import "MainTableViewCell.h"
-#import "FirstTableViewCell.h"
+#import "PlaceTableViewCell.h"
+#import "MapTableViewCell.h"
 #import <MapKit/MapKit.h>
 #import "Place.h"
-#import "FMUtils.h"
+#import "Utils.h"
 #import "Setting.h"
 #import "Constants.h"
 #import "CustomAnnotation.h"
+#import <GoogleMaps/GoogleMaps.h>
 
-@interface PlaceTableViewController ()
-
+@interface PlaceTableViewController (){
+    GMSMapView *mapView_;
+}
 
 @end
 
 @implementation PlaceTableViewController
-@synthesize headerView,points,fetchedObjects,searchBar;
+@synthesize headerView,points,fetchedObjects;
 PopoverListView *listView;
 UIView *backgroundView;
 UIImageView * imgCheck,*imgUnCheck;
@@ -41,6 +43,12 @@ UIView *disableViewOverlay;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+    self.navigationController.navigationBar.translucent = NO;
+    self.view.frame = CGRectMake(0, 10, self.tableView.frame.size.width, self.view.frame.size.height);
+
     // read json data
 
     NSString *jsonString = [[NSBundle mainBundle] pathForResource:@"Directions" ofType:@"geojson"];
@@ -50,9 +58,6 @@ UIView *disableViewOverlay;
 
     points = [[[jsonDic objectForKey:@"coordinates"] objectAtIndex:0]  mutableCopy];
     
-    
-    
-    
     // load data from db
    NSArray *sort= [NSArray arrayWithObjects:[NSSortDescriptor sortDescriptorWithKey:@"name"
                                   ascending:YES
@@ -60,8 +65,20 @@ UIView *disableViewOverlay;
     
     fetchedObjects=[[CoreDataManager sharedManager] fetchEntitiesWithClassName:@"Place" sortDescriptors:sort sectionNameKeyPath:nil predicate:nil];
     
+    _filteredArray = [[NSMutableArray alloc] init];
+    for (Place *place in [fetchedObjects fetchedObjects]) {
+        [_filteredArray addObject:place];
+    }
+    
+    UITapGestureRecognizer *tapImageDetail = [[UITapGestureRecognizer alloc]
+                                              initWithTarget:self
+                                              action:@selector(resignFirstResponder)];
+    tapImageDetail.numberOfTapsRequired = 1;
+    [self.view addGestureRecognizer:tapImageDetail];
 }
-
+-(void)resignFirstResponderSearch{
+    [self.searchBar resignFirstResponder];
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -82,7 +99,7 @@ UIView *disableViewOverlay;
         return 1;
     else
     // Return the number of rows in the section.
-    return [[fetchedObjects fetchedObjects] count];
+    return [_filteredArray count];
 }
 -(void) CellDecor:(UITableViewCell *) cell
 {
@@ -121,58 +138,62 @@ UIView *disableViewOverlay;
     tableView.separatorColor = [UIColor clearColor];
 
     if (indexPath.section==0) {
-        FirstTableViewCell *firstCell =[[FirstTableViewCell alloc] init];
+        
+        MapTableViewCell *mapTableViewCell =[[MapTableViewCell alloc] init];
     
-        firstCell=( FirstTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"FirstCell"];
-        [firstCell.btnFillter addTarget:self
+        mapTableViewCell=( MapTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"FirstCell"];
+        [mapTableViewCell.btnFillter addTarget:self
                                         action:@selector(Fillter:)
                               forControlEvents:UIControlEventTouchUpInside];
         
-        [self CellDecor:firstCell];
-
-        CLLocationCoordinate2D coord       = {.latitude =  [[[self.points objectAtIndex:9] objectAtIndex:1] doubleValue], .longitude = [[[self.points objectAtIndex:9] objectAtIndex:0] doubleValue]}; // 9 for testing region
+        [self CellDecor:mapTableViewCell];
         
-
-        MKCoordinateSpan span              = {.latitudeDelta =  0.2, .longitudeDelta =  0.2};
-        MKCoordinateRegion region          = {coord, span};
-        [ firstCell.mapView setRegion:region animated:TRUE];
-        [ firstCell.mapView regionThatFits:region];
-
-        for (NSUInteger i = 0; i < [self.points count]; i++)
+        GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:-33.86
+                                                                longitude:148.60
+                                                                     zoom:6];
+        mapView_ = [GMSMapView mapWithFrame:CGRectMake(0, 0, mapTableViewCell.mapViewGoogle.frame.size.width, mapTableViewCell.mapViewGoogle.frame.size.height) camera:camera];
+        mapView_.myLocationEnabled = YES;
+        [mapTableViewCell.mapViewGoogle addSubview:mapView_] ;
+        
+        for ( int i=0; i<[self.points count]; i++)
         {
-           
              CLLocationCoordinate2D coordinate       = {.latitude =  [[[self.points objectAtIndex:i] objectAtIndex:1] doubleValue], .longitude = [[[self.points objectAtIndex:i] objectAtIndex:0] doubleValue]};
             
-            CustomAnnotation *anno=[[CustomAnnotation alloc] initWithTitle:[NSString stringWithFormat:@"Test %d",i] Location:coordinate];
-            firstCell.annoImgName=@"ic_location_orange";
-            [firstCell.mapView addAnnotation:anno];
-            //[firstCell gotoLocation:coord];
+            CLLocationCoordinate2D position = CLLocationCoordinate2DMake(coordinate.longitude,coordinate.latitude);
+            GMSMarker *gmarker = [[GMSMarker alloc] init];
+            gmarker.position = position;
+            gmarker.icon = [UIImage imageNamed:@"ic_location"];
+            gmarker.title= @"Sydney";
+            gmarker.snippet = @"Australia";
+            gmarker.map = mapView_;
+            
+            
         }
-       
         
 
-        return firstCell;
+        return mapTableViewCell;
         
     }
     else
     {
        
    
-        MainTableViewCell * mainCell =[[MainTableViewCell alloc] init];
-        mainCell=( MainTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
-            Place *place=[[fetchedObjects fetchedObjects] objectAtIndex:indexPath.row];
-            mainCell.lblPlaceName.text=place.name ;
-            mainCell.lblAddress.text=place.address ;
-            mainCell.lblDescription.text=place.desc ;
-            [mainCell.mainImageView setImage:[UIImage imageNamed:place.image]];
-            mainCell.lblPoint.text= [NSString stringWithFormat:@"%@",place.rating ] ;
+        PlaceTableViewCell * placeTableViewCell =[[PlaceTableViewCell alloc] init];
+        placeTableViewCell=(PlaceTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
+            Place *place=[_filteredArray objectAtIndex:indexPath.row];
+            placeTableViewCell.lblPlaceName.text=place.name ;
+            placeTableViewCell.lblAddress.text=place.address ;
+            placeTableViewCell.lblDescription.text=place.desc ;
+            [placeTableViewCell.mainImageView setImage:[UIImage imageNamed:place.image]];
+            placeTableViewCell.lblPoint.text= [NSString stringWithFormat:@"%@",place.rating ] ;
+            placeTableViewCell.place = place;
         
         for( int i=0;i<[place.rating floatValue];i++)
         {
             UIImageView *imageView;
             UIImage *starHalf=[UIImage imageNamed:@"ic_rating_05"];
             UIImage *starOne=[UIImage imageNamed:@"ic_rating_1"];
-            CGRect starViewFrame=mainCell.starView.frame;
+            CGRect starViewFrame = placeTableViewCell.starView.frame;
             
 
             if(i+ 0.5==[place.rating floatValue] )
@@ -190,12 +211,12 @@ UIView *disableViewOverlay;
             }
             
             
-            [mainCell addSubview:imageView];
+            [placeTableViewCell addSubview:imageView];
             
         
         }
-        [self CellDecor:mainCell];
-        return mainCell;
+        [self CellDecor:placeTableViewCell];
+        return placeTableViewCell;
     }
     return nil;
 }
@@ -215,14 +236,14 @@ UIView *disableViewOverlay;
     
     if(section == 0)
     {
-        return 60;
+        return 55;
     }
     return 0;
 }
 #pragma action
 
 - (IBAction)Fillter:(id)sender {
-
+    [self.searchBar resignFirstResponder];
     backgroundView =[[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [backgroundView setBackgroundColor:[UIColor colorWithWhite:0.276 alpha:0.900]];
     [self.view.superview addSubview:backgroundView];
@@ -232,31 +253,29 @@ UIView *disableViewOverlay;
     listView.delegate = self;
     id lis=listView;
         [listView setDoneButtonWithTitle:@"Search" block:^{
-            NSLog(@"Search id %d", [lis indexPathForSelectedRow].row);
-            [backgroundView setHidden:YES];
+            if ([lis indexPathForSelectedRow].row == 0) {
+                [backgroundView setHidden:YES];
+                
+            }else{
             
-            //saving setting to db coredata
-            NSNumber *setting=[NSNumber numberWithInteger:[lis indexPathForSelectedRow].row];
-            if (setting==nil) {
-                setting=[NSNumber numberWithInt:0];
+                [backgroundView setHidden:YES];
+                //saving setting to db coredata
+                NSNumber *setting=[NSNumber numberWithInteger:[lis indexPathForSelectedRow].row];
+                if (setting==nil) {
+                    setting=[NSNumber numberWithInt:0];
+                }
+                NSString  *userID=[[NSUserDefaults standardUserDefaults] objectForKey:defaultUserID];
+            
+                NSDictionary *settingDic=[[NSDictionary alloc] initWithObjectsAndKeys:setting,@"idSetting",userID,@"idUser", nil];
+                [[CoreDataManager sharedManager] createEntityWithClassName:@"Setting" attributesDictionary:settingDic];
+                NSArray *sort= [NSArray arrayWithObjects:[NSSortDescriptor sortDescriptorWithKey:@"idUser"
+                                                                                       ascending:YES
+                                                                                        selector:@selector(localizedCaseInsensitiveCompare:)],nil];
+                fetchedObjects=[[CoreDataManager sharedManager] fetchEntitiesWithClassName:@"Setting" sortDescriptors:sort sectionNameKeyPath:nil predicate:nil];
+                Setting* test =  [[fetchedObjects fetchedObjects] objectAtIndex:0];
+    
+                NSLog(@"Id User : %@ , Id Setting filter : %@",test.idUser,test.idSetting);
             }
-            NSString  *userID=[[NSUserDefaults standardUserDefaults] objectForKey:defaultUserID];
-            if(userID==nil)
-            {
-            userID=@"UnKnow";
-            }
-            NSDictionary *settingDic=[[NSDictionary alloc] initWithObjectsAndKeys:setting,@"idSetting",userID,@"idUser", nil];
-            [[CoreDataManager sharedManager] createEntityWithClassName:@"Setting" attributesDictionary:settingDic];
-            
-            
-            /**
-             test data
-             */
-            //            NSArray *sort= [NSArray arrayWithObjects:[NSSortDescriptor sortDescriptorWithKey:@"idUser"
-            //                                                                                   ascending:YES
-            //                                                                                    selector:@selector(localizedCaseInsensitiveCompare:)],nil];
-            //            fetchedObjects=[[CoreDataManager sharedManager] fetchEntitiesWithClassName:@"Setting" sortDescriptors:sort sectionNameKeyPath:nil predicate:nil];
-            //          Setting* e =  [[fetchedObjects fetchedObjects] objectAtIndex:0];
             
         }];
     [listView show];
@@ -264,13 +283,14 @@ UIView *disableViewOverlay;
     
     
 }
+
 - (IBAction)AcBackHome:(id)sender {
     
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)AcMenu:(id)sender {
-    [FMUtils showMessageNotSupport];
+    [Utils showMessageNotSupport];
 
 }
 #pragma Fillter list implement
@@ -329,77 +349,60 @@ UIView *disableViewOverlay;
 }
 
 
-#pragma SEARCH
+#pragma searchbar
 
-- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
-    [searchBar setShowsCancelButton:YES animated:YES];
-    self.tableView.allowsSelection = NO;
-    self.tableView.scrollEnabled = NO;
-
-    [UIView beginAnimations:@"FadeIn" context:nil];
-    [UIView setAnimationDuration:0.5];
-   
-    [UIView commitAnimations];
-}
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
-   
-    
     [searchBar setShowsCancelButton:NO animated:YES];
     [searchBar resignFirstResponder];
     self.tableView.allowsSelection = YES;
     self.tableView.scrollEnabled = YES;
 }
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
-
+    /*[self filterContentForSearchText:searchBar.text scope:@"All"];
+    [searchBar setShowsCancelButton:NO animated:YES];
+    [searchBar resignFirstResponder];
+    [self.tableView reloadData];
+     */
     NSArray *sort= [NSArray arrayWithObjects:[NSSortDescriptor sortDescriptorWithKey:@"name"
                                                                            ascending:YES
                                                                             selector:@selector(localizedCaseInsensitiveCompare:)],nil];
     // Search with name or Address or Description
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"ANY %@ IN name || ANY %@ IN address OR ANY %@ IN desc",searchBar.text,searchBar.text, searchBar.text];
-
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"name CONTAINS[cd] %@ OR address CONTAINS[cd] %@ OR desc CONTAINS[cd] %@",searchBar.text,searchBar.text, searchBar.text];
     fetchedObjects=[[CoreDataManager sharedManager] fetchEntitiesWithClassName:@"Place" sortDescriptors:sort sectionNameKeyPath:nil predicate:pred];
-	
     [searchBar setShowsCancelButton:NO animated:YES];
     [searchBar resignFirstResponder];
     self.tableView.allowsSelection = YES;
     self.tableView.scrollEnabled = YES;
 
+    [_filteredArray removeAllObjects];
+    for (Place *place in [fetchedObjects fetchedObjects]) {
+        [_filteredArray addObject:place];
+    }
     [self.tableView reloadData];
 }
 
-- (void)searchBar:(UISearchBar *)searchBar activate:(BOOL) active{
-    self.tableView.allowsSelection = !active;
-    self.tableView.scrollEnabled = !active;
-    if (!active) {
-        [disableViewOverlay removeFromSuperview];
-        [searchBar resignFirstResponder];
-    } else {
-        disableViewOverlay.alpha = 0;
-        [self.view addSubview:disableViewOverlay];
-		
-        [UIView beginAnimations:@"FadeIn" context:nil];
-        [UIView setAnimationDuration:0.5];
-        disableViewOverlay.alpha = 0.6;
-        [UIView commitAnimations];
-		
-        // probably not needed if you have a details view since you
-        // will go there on selection
-        NSIndexPath *selected = [self.tableView
-                                 indexPathForSelectedRow];
-        if (selected) {
-            [self.tableView deselectRowAtIndexPath:selected
-                                             animated:NO];
-        }
-    }
-    [searchBar setShowsCancelButton:active animated:YES];
+-(BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *) ww
+{
+    return true;
 }
-
-- (void)viewWillDisappear:(BOOL)animated {
-    
-    [super viewWillDisappear:animated];
-    
-    [searchBar resignFirstResponder];
-    
+- (void)filterContentForSearchText:(NSString*)searchText scope:(NSString*)scope
+{
+	NSLog(@"Previous Search Results were removed.");
+    [_filteredArray removeAllObjects];
+	for (Place *role in [self.fetchedObjects fetchedObjects])
+	{
+		if ([scope isEqualToString:@"All"] || [role.name isEqualToString:scope])
+		{
+			NSComparisonResult result = [role.name compare:searchText
+                                                   options:(NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch)
+                                                     range:NSMakeRange(0, [searchText length])];
+            if (result == NSOrderedSame)
+			{
+                NSLog(@"Adding role.name '%@' to searchResults as it begins with search text '%@'", role.name, searchText);
+				[_filteredArray addObject:role];
+            }
+		}
+	}
 }
 
 @end

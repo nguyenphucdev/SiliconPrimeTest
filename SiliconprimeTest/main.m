@@ -2,8 +2,8 @@
 //  main.m
 //  SiliconprimeTest
 //
-//  Created by VinhPhuc on 7/31/14.
-//  Copyright (c) 2014 Happy. All rights reserved.
+//  Created by Apple on 7/31/14.
+//  Copyright (c) 2014 Apple. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
